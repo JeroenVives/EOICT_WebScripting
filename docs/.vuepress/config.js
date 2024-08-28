@@ -1,57 +1,29 @@
 import { containerPlugin } from '@vuepress/plugin-container'
+import { viteBundler } from '@vuepress/bundler-vite'
 import { defaultTheme } from '@vuepress/theme-default'
 import { registerComponentsPlugin } from '@vuepress/plugin-register-components'
 import { path } from '@vuepress/utils'
 
+
 module.exports = {
+  bundler: viteBundler(),
   lang: 'en-US',
-  title: 'Course Full Stack Development - Professional Bachelor Elektronica-ICT',
-  description: 'Course Full Stack Development',
+  title: 'Course Web Scripting - Professional Bachelor Elektronica-ICT',
+  description: 'Course Web Scripting',
   
   theme: defaultTheme({
     logo: '/files/afbeelding1.png',
     navbar: [
       { text: 'Home', link: '/' },
       { text: 'Organization', link: 'https://www.vives.be' },      
-      { text: 'Contact', link: 'mailto:ronny.mees@vives.be' }
+      { text: 'Contact', link: 'mailto:jeroen.reinenbergh@vives.be' }
     ],
     sidebar: [
       {
-        text: 'Development Tools',
+        text: 'Development tools',
         collapsible: true,
         children: [
           '/01_developmenttools/README.md',          
-        ]
-      },{
-        text: 'Introduction',
-        collapsible: true,
-        children: [
-          '/11_history_and_evolution/README.md',
-          '/12_tcp_ip_stack/README.md',
-          '/13_client_server_model/README.md',
-          '/14_web_protocols/README.md',
-          '/15_internet_of_things/README.md',
-        ]
-      },{
-        text: 'Frontend Webdesign',
-        collapsible: true,
-        children: [
-          '/21_folder_structure/README.md',
-          '/22_webstructure_html/README.md',
-          '/23_webstyling_css/README.md',
-          '/24_responsive_styling/README.md',
-          '/25_online_styles/README.md',
-          '/26_deploy_website/README.md',
-        ]
-      },{
-        text: 'Frontend Scripting',
-        collapsible: true,
-        children: [
-          '/31_communication/README.md',
-          '/32_frontend_scripting_js/README.md',
-          '/35_using_api/README.md',
-          '/33_typescript/README.md',
-          '/34_advanced_js/README.md',
         ]
       },{
         text: 'Backend databases',
@@ -65,7 +37,7 @@ module.exports = {
           '/46_crud_db/README.md',
         ]
       },{
-        text: 'Backend Scripting',
+        text: 'Backend scripting',
         collapsible: true,
         children: [
           '/51_intro_express/README.md',
@@ -74,7 +46,7 @@ module.exports = {
           '/54_security/README.md',
         ]
       },{
-        text: 'Frontend Development',
+        text: 'Frontend development',
         collapsible: true,
         children: [
           '/61_frontend_vue/README.md',
@@ -105,7 +77,7 @@ module.exports = {
       }
     ],
     sidebarDepth: 1,
-    repo: 'https://github.com/ronnymees/fullstackdevelopment_eoict',
+    repo: 'https://github.com/JeroenVives/EOICT_WebScripting',
     docsDir: 'docs',
     docsBranch: 'master',
   }),

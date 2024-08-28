@@ -1,7 +1,7 @@
 {
-  "name": "fullstackdevelopment_eoict",
+  "name": "eoict_webscripting",
   "version": "0.0.1",
-  "description": "Cursus Full Stack Development PBA Elektronica ICT",
+  "description": "Cursus Web Scripting PBA Elektronica ICT",
   "main": "index.js",
   "directories": {
     "doc": "docs"
@@ -12,17 +12,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ronnymees/fullstackdevelopment_eoict"
+    "url": "git+https://github.com/JeroenVives/EOICT_WebScripting"
   },
   "authors": {
-    "name": "Ronny Mees",
-    "email": "ronny.mees@vives.be"
+    "name": "Jeroen Reinenbergh",
+    "email": "jeroen.reinenbergh@vives.be"
   },
   "license": "MIT",
-  "homepage": "https://github.com/ronnymees/fullstackdevelopment_eoict#readme",
+  "homepage": "https://github.com/JeroenVives/EOICT_WebScripting#readme",
   "devDependencies": {
-    "@vuepress/plugin-container": "^2.0.0-beta.61",
-    "@vuepress/plugin-register-components": "^2.0.0-beta.61",    
-    "vuepress": "^2.0.0-beta.61"
+    "@vuepress/bundler-vite": "^2.0.0-rc.15",
+    "@vuepress/plugin-container": "^2.0.0-rc.0",
+    "@vuepress/plugin-register-components": "2.0.0-rc.42",
+    "@vuepress/theme-default": "^2.0.0-rc.42",
+    "vuepress": "^2.0.0-rc.15"
   }
 }

@@ -1,6 +1,6 @@
-# Full Stack Webdevelopment
+# Web Scripting
 
-![Netlify Status](https://api.netlify.com/api/v1/badges/2da24422-0bbe-45a8-a291-54c5d790d80f/deploy-status)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/15932a6e-c5fb-4148-8527-1d86c0b50143/deploy-status)](https://app.netlify.com/sites/eo-ict-webscripting/deploys)
 
 This course is still in development.
 
@@ -8,24 +8,23 @@ This course is still in development.
 
 ## Introduction
 
-This course is developed for PBA Electronics-ICT at [University College VIVES](https://www.vives.be/nl/technology/elektronica-ict).
-During this course you will learn the basics of HTML5, CSS3, Javascript, Typescript, Node.js, Express.js, Vue, MySQL, Docker, ... all tools to become a full stack developer.
+This course is developed for PBA Electronics-ICT at [University College VIVES](https://www.vives.be/nl/technology/elektronica-ict). It is based on [this full stack development course](https://eo-ict-fullstackdevelopment.netlify.app/).
+During this course you will learn the basics of Node.js, Express.js, Vue, MySQL, Docker, ...
 
 ## Content
 
-1. Introduction to web development
-2. Frontend webdesign with HTML and CSS
-3. Frontend scripting with Javascript
-4. Backend databases with SQL
-5. Backend scripting with Express.js
-6. Frontend development
-7. Privacy regulations
-8. Deployment
+1. Development tools
+2. Backend databases
+3. Backend scripting
+4. Frontend development
+5. Privacy regulations
+6. Deployment
 
 ## Sources
 
 This work is the result of the knowledge of the writer & colleagues at VIVES University college:
 
+* Jeroen Reinenbergh
 * Ronny Mees
 * Nico De Witte
 * Sille Van Landschoot

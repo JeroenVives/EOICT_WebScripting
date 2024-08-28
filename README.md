@@ -1,4 +1,4 @@
-# Course Full Stack Development - PBA Elektronica-ICT
+# Course Web Scripting - PBA Elektronica-ICT
 
 ## local development
 
@@ -8,7 +8,7 @@ npm run dev
 ## new repository
 
 ```bash
-git clone git@github.com:ronnymees/fullstackdevelopment_eoict.git
-cd fullstackdevelopment_eoict
+git clone git@github.com:JeroenVives/EOICT_WebScripting.git
+cd EOICT_WebScripting
 npm install
 ```
