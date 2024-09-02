@@ -40,10 +40,11 @@ module.exports = {
         text: 'Backend scripting',
         collapsible: true,
         children: [
-          '/51_intro_express/README.md',
-          '/52_rest_api_crud/README.md',
-          '/53_rest_api_fileupload/README.md',
-          '/54_security/README.md',
+          '/51_advanced_js/README.md',
+          '/52_intro_express/README.md',
+          '/53_rest_api_crud/README.md',
+          '/54_rest_api_fileupload/README.md',
+          '/55_security/README.md',
         ]
       },{
         text: 'Frontend development',
