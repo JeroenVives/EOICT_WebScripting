@@ -1296,3 +1296,7 @@ function anOtherTimeConsumingOperation() {
   })
 }
 ```
+
+## Promises vs async await
+
+You can read all about the differences and similarities between these two approaches [here](https://stackoverflow.com/questions/53057110/difference-of-using-async-await-vs-promises#answer-53057776).
