@@ -400,7 +400,7 @@ require('dotenv').config();       // for node.js 5
 const mysql = require("mysql");
 import dotenv from 'dotenv';      // for node.js 6
 dotenv.config();                                    
-import mysql from ('mysql');
+import mysql from 'mysql';
 const DB_HOST = process.env.DB_HOST;
 const DB_USER = process.env.DB_USER;
 const DB_PASS = process.env.DB_PASS;

@@ -188,7 +188,7 @@ Suppose we have a product with a *username* and *category*, we can use *data()* 
         data(){
             return{
                 username: 'John',
-                catergory: 'Books'
+                category: 'Books'
             }
         }
     }
