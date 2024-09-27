@@ -69,8 +69,6 @@ module.exports = {
         text: 'Deployment',
         collapsible: true,
         children: [
-          '/81_vm/README.md',
-          '/82_docker_static/README.md',
           '/83_docker_full/README.md',
           //'/72_login/README.md',
           //'/71_secure_api/README.md',          
