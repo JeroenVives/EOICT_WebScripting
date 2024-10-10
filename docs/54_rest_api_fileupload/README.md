@@ -16,10 +16,10 @@ This is the project structure that we are aiming for:
 ![image](./images/image1.png)
 
 * `resources/static/assets/uploads`: folder for storing uploaded files.
-* `middleware/upload.js`: initializes Multer Storage engine and defines middleware function to save uploaded files in uploads folder.
-* `file.controller.js` exports Rest APIs: POST a file, GET all files’ information, download a File with url.
-* `routes/index.js`: defines routes for endpoints that is called from HTTP Client, use controller to handle requests.
-* `server.js`: initializes routes, runs Express app.
+* `src/middleware/upload.js`: initializes Multer Storage engine and defines middleware function to save uploaded files in uploads folder.
+* `src/controllers/file.controller.js` exports Rest APIs: POST a file, GET all files’ information, download a File with url.
+* `src/routes/index.js`: defines routes for endpoints that is called from HTTP Client, use controller to handle requests.
+* `src/server.js`: initializes routes, runs Express app.
 
 ## Installing dependencies
 
@@ -38,10 +38,8 @@ npm install multer cors // along with express ofcourse
 Now we create the middleware for file upload by creating the `upload.js` file :
 
 ```js
-const util = require("util");       // for node.js 5
-const multer = require("multer");
-import util from ('util');          // for node.js 6
-import multer from ('multer');
+import util from 'util';
+import multer from 'multer';
 const maxSize = 2 * 1024 * 1024;
 
 let storage = multer.diskStorage({
@@ -64,7 +62,7 @@ let uploadFile = multer({
 
 // make sure the middleware can be used with the ASYNC/AWAIT
 let uploadFileMiddleware = util.promisify(uploadFile); 
-module.exports = uploadFileMiddleware;
+export default uploadFileMiddleware;
 ```
 
 :::tip 💡Tip
@@ -74,7 +72,7 @@ When testing this with Postman you also need give the key this name.
 
 ### Create controller for file upload/download
 
-In controller folder, create `file.controller.js`:
+In controllers folder, create `file.controller.js`:
 
 * For File Upload method, we will export `upload()` function that:
 
@@ -88,10 +86,8 @@ In controller folder, create `file.controller.js`:
     * `download()`: receives file name as input parameter, then uses Express res.download API to transfer the file at path (directory + file name) as an ‘attachment’.
 
 ```js
-const uploadFile = require("../middleware/upload");   // for node.js 5
-const fs = require('fs');
-import uploadFile from ('../middleware/upload');      // for node.js 6
-import fs from ('fs');
+import uploadFile from '../middleware/upload.js';
+import fs from 'fs';
 
 const upload = async (req, res) => {
   try {
@@ -153,10 +149,10 @@ const download = (req, res) => {
   });
 };
 
-module.exports = {
+export default {
   upload,
   getListFiles,
-  download,
+  download
 };
 ```
 
@@ -172,11 +168,9 @@ There are 3 routes with corresponding controller methods:
 Create index.js file inside **routes** folder with content like this:
 
 ```js
-const express = require("express");   // for node.js 5
-import express from ('express');      // for node.js 6
+import express from 'express';
 const router = express.Router();
-const controller = require("../controller/file.controller");  // for node.js 5
-import controller from ('../controller/file.controller');  // for node.js 6
+import controller from '../controllers/file.controller.js';
 
 let routes = (app) => {
   router.post("/upload", controller.upload);
@@ -186,20 +180,23 @@ let routes = (app) => {
   app.use(router);
 };
 
-module.exports = routes;
+export default routes;
 ```
 
-You can see that we use controller from `file.controller.js`.
+You can see that we use the controller defined in `file.controller.js`.
 
 ### Create Express app server
 
 Now we create our Express server in `server.js`:
 
 ```js
-const cors = require("cors");         // for node.js 5
-const express = require("express");
-import cors from ('cors');            // for node.js 6
-import express from ('express');
+import cors from 'cors';
+import express from 'express';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(dirname(__filename));
 
 const app = express();
 
@@ -211,7 +208,7 @@ var corsOptions = {
 
 app.use(cors(corsOptions));
 
-const initRoutes = require("./src/routes");
+import initRoutes from './routes/index.js';
 
 app.use(express.urlencoded({ extended: true }));
 initRoutes(app);
@@ -227,12 +224,12 @@ What we do are:
     * Express is for building the Rest apis
     * cors provides Express middleware to enable CORS with various options.
 * create an Express app, then add `cors` middlewares using `app.use()` method. Notice that we set origin: `http://localhost:8081`.
-* listen on port 8080 for incoming requests.
+* listen on port 8081 for incoming requests.
 
 ### Run & Test
 
-First we need to create **uploads** folder with the path `resources/static/assets`.
-On the project root folder, run this command: `node server.js`.
+First we need to create an **uploads** folder inside `resources/static/assets`.
+On the project root folder, run this command: `node src/server.js`.
 
 * Let’s use **Postman** to make HTTP POST request with a file:
 
@@ -259,49 +256,37 @@ To delete a file in Node.js, we can use the `unlink()` function offered by the N
 Here is an illustration showing how you can apply the technique:
 
 ```js
-const fs = require('fs'); // for node.js 5
-import fs from ('fs');    // for node.js 6
+import fs from 'fs';
 
-fs.unlink(directoryPath + fileName, (err) => {
-    if (err) {
-        throw err;
-    }
+const remove = (req, res) => {
+    const fileName = req.params.name;
+    const directoryPath = __basedir + "/resources/static/assets/uploads/";
 
-    console.log("Delete File successfully.");
-});
+    fs.unlink(directoryPath + fileName, (err) => {
+        if (err) {
+        res.status(500).send({
+            message: "Could not delete the file. " + err,
+        });
+        }
+
+        res.status(200).send({
+        message: "File is deleted.",
+        });
+    });
+};
 ```
 
 ### Create controller for file delete
 
-In controller folder, create `file.controller.js`:
+In the controllers folder, create `file.controller.js`:
 
-We will export `remove()` function that:
-* use `fs.unlink` function for deleting file by its name
-* return response with message
+We will export a `remove()` function that:
+* uses the `fs.unlink` function for deleting a file by name
+* returns a response with message
 
 ```js
-const fs = require('fs'); // for node.js 5
-import fs from ('fs');    // for node.js 6
-
-const remove = (req, res) => {
-  const fileName = req.params.name;
-  const directoryPath = __basedir + "/resources/static/assets/uploads/";
-
-  fs.unlink(directoryPath + fileName, (err) => {
-    if (err) {
-      res.status(500).send({
-        message: "Could not delete the file. " + err,
-      });
-    }
-
-    res.status(200).send({
-      message: "File is deleted.",
-    });
-  });
-};
-
 module.exports = {
-  remove,
+  remove
 };
 ```
 
@@ -315,11 +300,9 @@ Here is route with corresponding controller method:
 Create `index.js` file inside **routes** folder with content like this:
 
 ```js
-const express = require("express");   // for node.js 5
-import express from ('express');      // for node.js 6
+import express from 'express';
 const router = express.Router();
-const controller = require("../controller/file.controller");  // for node.js 5
-import controller from ('../controller/file.controller');  // for node.js 6
+import controller from '../controllers/file.controller.js';
 
 let routes = (app) => {
   router.delete("/files/:name", controller.remove);
@@ -327,10 +310,10 @@ let routes = (app) => {
   app.use(router);
 };
 
-module.exports = routes;
+export default routes;
 ```
 
-You can see that we use controller from `file.controller.js`.
+You can see that we use the controller from `file.controller.js`.
 
 ### Run & Test
 
