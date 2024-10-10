@@ -1,8 +1,6 @@
-import { containerPlugin } from '@vuepress/plugin-container'
 import { viteBundler } from '@vuepress/bundler-vite'
 import { defaultTheme } from '@vuepress/theme-default'
-import { registerComponentsPlugin } from '@vuepress/plugin-register-components'
-import { path } from '@vuepress/utils'
+import { copyCodePlugin } from '@vuepress/plugin-copy-code'
 
 
 module.exports = {
@@ -82,16 +80,13 @@ module.exports = {
   }),
   serviceWorker: true,
   plugins: [
-    containerPlugin({
-      type: 'codeoutput',
+    copyCodePlugin({
       locales: {
         '/': {
-          defaultInfo: 'Output',
+          copy: 'Copy code',
+          copied: 'Copied',
         },
       },
-    }),
-    registerComponentsPlugin({
-      componentsDir: path.resolve(__dirname, './components'),
     }),
   ],
 }
