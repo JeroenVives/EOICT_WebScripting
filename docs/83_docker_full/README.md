@@ -1,131 +1,132 @@
 # Deploy a MySQL, Express & Vue project
 
 :::warning 🔥warning
-Make sure you have prepared your VM before continuing here.
+Make sure you have installed [docker desktop](https://www.docker.com/products/docker-desktop/).
 :::
 
-## Prepare your project for deployment
+To be able to deploy our web application in docker we need to prepare it.
 
-To be able to deploy our web application on the VM we need to prepare it.
+## Create a centralized folder for deployment
 
-### Create a GitHub repository for deployment
+* create a local folder `<projectname>` with the subfolders `db`, `api` and `vue`.
+* make a copy of [your Express project](./files/api.zip) to the folder `api`.
+* make a copy of [your Vue project](./files/vue.zip) to the folder `vue`.
 
-* create a new repository on github
-* create a local folder `<projectname>` with the subfolders `backend-api` and `frontend-vue`.
-* make a copy of your **express** project to the folder `backend-api`.
-* make a copy of your **vue** project to the folder `frontend-vue`.
-* open the folder `<projectname>` in Visual Code and open a terminal
-* make it a git repository by typing `git init`.
-* add the remote GitHub repository by typing `git remote add origin git@github.com:yourusername/repositoryname.git` (the last part is your SSH link from your GitHub repository)
-* make a first push 
+## Preparing the necessary files for docker
 
-### Preparing the necessary files for docker
+### Docker compose file
 
-#### Docker compose file
+First we will be creating the docker compose file that will contain the necessary services that need to be deployed on docker (MariaDB, PHPmyAdmin, API and Vue).
 
-First we will be creating the docker compose file that will contain the necessary services that need to be deployed on docker ( MySQL, PHPmyAdmin, Backend-API and Frontend-Vue).
-
-Create a file `docker-compose.yml` in the folder  `<projectname>` with the following content:
+Create a file `compose.yaml` in the folder  `<projectname>` with the following content:
 
 ``` yaml
-version: '3'
 services:
   db:
-    image: mysql
-    restart: always
+    container_name: db
+    image: mariadb
+    restart: unless-stopped
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQLDB_ROOT_PASSWORD}
-      - MYSQL_DATABASE=${MYSQLDB_DATABASE}
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
     volumes:
-      - db:/var/lib/mysql
+      - ./db/init:/docker-entrypoint-initdb.d
+      - ./db/data:/var/lib/mysql
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    restart: always
+    container_name: phpmyadmin
+    image: phpmyadmin
+    restart: unless-stopped
     ports:
-      - "8080:80"
+      - 81:80
     environment:
       - PMA_ARBITRARY=1
       - PMA_HOST=db
       - PMA_USER=root
-      - PMA_PASSWORD=${MYSQLDB_ROOT_PASSWORD}
-  api:
+      - PMA_PASSWORD=${MARIADB_ROOT_PASSWORD}
     depends_on:
       - db
+  api:
+    container_name: api
     build:
-      context: ./backend-api
+      context: ./api
       dockerfile: Dockerfile
-    restart: always
+    restart: unless-stopped
     ports:
       - 3000:3000
     environment:
       - DB_HOST=db
-      - DB_USER=${MYSQLDB_USER}
-      - DB_PASS=${MYSQLDB_USER_PASS}
-      - DB_NAME=${MYSQLDB_DATABASE}
+      - DB_USER=${MARIADB_USER}
+      - DB_PASS=${MARIADB_PASSWORD}
+      - DB_NAME=${MARIADB_DATABASE}
       - DB_PORT=3306
-  ui:
-    depends_on: 
-       - api
+      - VUE_HOST=${VUE_HOST}:5000
+    depends_on:
+      - db
+  vue:
+    container_name: vue
     build:
-      context: ./frontend-vue
+      context: ./vue
       dockerfile: Dockerfile
-    restart: always
+      args:
+        VUE_APP_API_HOST: ${API_HOST}:3000
+    restart: unless-stopped
     ports:
-      - 80:80
-    environment:
-      - VUE_APP_API_HOST=<your server ip-adress>:3000
-volumes:
-  db:
+      - 5000:80
+    depends_on: 
+      - api
 ``` 
 
-Notice that the MySQL server port 3306 is not exposed, so our database is not accessable outside docker.
+Notice that the MariaDB server port 3306 is not exposed, so our database is not accessable outside docker.
 
-#### Docker file for the backend API
+### Docker file for the API
 
-Create a file `Dockerfile` in the folder `backend-api` with the following content:
+Create a file `Dockerfile` in the folder `api` with the following content:
 
 ``` yaml
 # Development stage
-FROM node:18.16-alpine3.17 as develop-stage
+FROM node:23-alpine AS develop-stage
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
 
 # Build stage
-FROM develop-stage as build-stage
+FROM develop-stage AS build-stage
 EXPOSE 3000
 CMD ["npm", "run", "start"]
 ```
 
-#### Docker file for the frontend Vue
+### Docker file for Vue
 
-Create a file `Dockerfile` in the folder `frontend-vue` with the following content:
+Create a file `Dockerfile` in the folder `vue` with the following content:
 
 ``` yaml
 # Development Stage
-FROM node:18.16-alpine3.17 as develop-stage
+FROM node:23-alpine AS develop-stage
 WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
 
 # Build Stage
-FROM develop-stage as build-stage
+FROM develop-stage AS build-stage
+ARG VUE_APP_API_HOST
+ENV VITE_API_HOST ${VUE_APP_API_HOST}
 RUN npm run build
 
 # Production Stage
-FROM nginx:1.25.1-alpine as production-stage
+FROM nginx:1.27-alpine AS production-stage
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY vue-env-replace.sh /docker-entrypoint.d
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
-#### Hosting configuration
+### Hosting configuration
 
-We are using `nginx` to host our frontend, therefore we need to configure it by adding a `nginx.conf` file in the `frontend-vue` folder with the following content:
+We are using `nginx` to host our frontend, therefore we need to configure it by adding a `nginx.conf` file in the `vue` folder with the following content:
 
 ```conf
 user  nginx;
@@ -160,113 +161,96 @@ http {
 }
 ```
 
-### Push to your GitHub repository
+### CORS
 
-Now your project is ready for deployment, you can push it to GitHub.
+In order for your Vue app to be able to call your Express API you will need to add its origin to the CORS headers in your Express app:
 
-## Clone and deploy your project
-
-Now we will be using our GitHub repository for deployment on Docker.
-
-### Clone your repository on docker
-
-Make a remote connection to your VM using Visual Studio Code.
-
-Open a terminal and clone your repository:
-
-```bash
-git clone <https link repo>
+```js
+...
+import cors from 'cors';
+...
+const app = express()
+...
+var corsOptions = {
+  origin: `http://${process.env.VUE_HOST}`
+};
+app.use(cors(corsOptions));
+...
 ```
 
-### Environment variables
+## Environment variables
 
-Open your projectfolder in remote connection of Visual Studio Code.
+### Create the environment variables file
 
-#### Create the environment variables file
-
-Next we need to create a ´.env´ file in the folder  `<projectname>` with the following content:
+Next we need to create a ´.env´ file in the folder `<projectname>` with the following content:
 
 ```env
 # mySQL database
-MYSQLDB_ROOT_PASSWORD=<your root password>
-MYSQLDB_DATABASE=vives
-MYSQLDB_USER=<a_user_for_your_database>
-MYSQLDB_USER_PASS=<a_password_for_this_user>
+MARIADB_ROOT_PASSWORD=<your root password>
+MARIADB_DATABASE=app
+MARIADB_USER=<a_user_for_your_database>
+MARIADB_PASSWORD=<a_password_for_this_user>
+API_HOST=localhost
+VUE_HOST=localhost
 ```
 
-#### Solve a problem for the frontend
+### Change static URL to environment variable
 
-For the Vue frontend we will have a problem that environment variables are injected into the application during the build stage. The resulting static files thus contain the respective values of those variables as hardcoded strings. To solve this we will use a script `vue-env-replace.sh` to replace all environment variables with there correct values.
-
-You can please the `vue-env-replace.sh` in your `frontend-vue` folder with the following content:
-
-```bash
-#!/bin/sh
-echo "Replacing ENV vars before starting nginx"
-for file in /usr/share/nginx/html/assets/*.js;
-do
-  if [ ! -f $file.tmpl.js ]; then
-    cp $file $file.tmpl.js
-  fi
-  envsubst '$VUE_APP_API_HOST' < $file.tmpl.js > $file
-done
-
-exit 0
-```
-
-Once you created this file, you will need to run the command `chmod +x vue-env-replace.sh` to make the script executable.
-The script will be executed by Docker because we have put it in the entrypoint. 
-
-#### Change static URL to environment variable
-
-In your Vue frontend you need to change all `localhost:3000` to `${VUE_APP_API_HOST}`.
+In your Vue project you need to change all `localhost:3000` to `${import.meta.env.VITE_API_HOST}`.
 
 Example:
 ```js
-axios.get('http://${VUE_APP_API_HOST}/images')
+axios.get('http://${import.meta.env.VITE_API_HOST}/images')
 ```
 
-### Deploy on docker
+## Prepare the database
+
+Prepare the folder structure for the database container:
+* db/
+    * data/
+    * init/
+* ...
+
+### Create an initialization script
+
+Finally, create a ´.sql´ file with the following content and place it in the `<projectname>/db/init` folder.
+
+```sql
+START TRANSACTION;
+
+CREATE TABLE `products` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `price` decimal(10,2) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_uca1400_ai_ci;
+
+INSERT INTO `products` (`id`, `name`, `price`) VALUES
+(1, 'kaas', 4.70),
+(2, 'brood', 3.40),
+(3, 'bananen', 2.60);
+
+ALTER TABLE `products`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `products`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+COMMIT;
+```
+
+## Deploy on docker
 
 Once we have done that, we are ready to build and run our service.
 
-* use `docker-compose up -d` to deploy your container, now you get your bash prompt returned.
-* use `docker-compose up -d --build` to deploy your container and rebuild them after adjustments have been made.
-* use `docker-compose ps` to see the name of the containers and status.
-* use `docker-compose down` to stop and remove the docker containers.
-* use `docker-compose down -v` to stop and remove the docker containers and volumes.
-
-![containers](./images/containers.png)exit
+* use `docker compose up -d` to deploy your containers, now you get your bash prompt returned.
+* use `docker compose up -d --build` to deploy your containers and rebuild them after adjustments have been made.
+* use `docker ps -a` to see the status of all containers.
 
 Should you want to open a terminal in one of the containers running on docker, you can do this by using this command:
 ```bash
 docker exec -it <the name of the container> sh
 ```
 To exit just type `exit`.
-
-### Prepare the database
-
-#### Create a user for the application
-
-In your browser open PHPmyAdmin by surfing to `<ip-adres-of-your-vm>:8080` and run the following sql-statement:
-
-```sql
-USE vives;
-CREATE USER '<a_user_for_your_database>'@'%' IDENTIFIED WITH mysql_native_password BY "<a_password_for_this_user>";
-GRANT ALL PRIVILEGES ON vives.* TO '<a_user_for_your_database>'@'%';
-```
-
-:::tip 💡tip
-The user and password must be the same as you entered in your `.env` file.
-:::
-
-
-#### Create the necessary tables
-
-Run the SQL-statement script you made to restore your database tables.
-
-Congratulations your project should be up and running now.
-
 
 
 
