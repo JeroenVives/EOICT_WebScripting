@@ -9,8 +9,8 @@ To be able to deploy our web application in docker we need to prepare it.
 ## Create a centralized folder for deployment
 
 * create a local folder `<projectname>` with the subfolders `db`, `api` and `vue`.
-* make a copy of [your Express project](./files/api.zip) to the folder `api`.
-* make a copy of [your Vue project](./files/vue.zip) to the folder `vue`.
+* make a copy of [your Express project](/files/api.zip) to the folder `api`.
+* make a copy of [your Vue project](/files/vue.zip) to the folder `vue`.
 
 ## Preparing the necessary files for docker
 
